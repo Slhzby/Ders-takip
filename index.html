@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ders Defteri</title>
+<meta name="theme-color" content="#F2F4F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1620" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ders Defteri">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{color-scheme:light;padding-block:env(safe-area-inset-top,0px) env(safe-area-inset-bottom,0px)}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap">
+<style>
+/* Düzen: telefon için tek sütun, altta sekmeler, formlar alttan açılan sayfalar.
+   Renk: soğuk gri zemin, koyu mavi-lacivert mürekkep, kobalt vurgu; özel = kobalt, grup = camgöbeği. */
+:root{
+  --bg:#F2F4F7; --surface:#FFFFFF; --surface2:#E8ECF1; --ink:#16202B; --ink2:#566271; --line:#DCE1E8;
+  --accent:#2D4FD6; --accent-ink:#FFFFFF; --accent-soft:#E3E9FC;
+  --ozel:#2D4FD6; --ozel-soft:#E3E9FC; --grup:#0B7F82; --grup-soft:#D9F0EF;
+  --ok:#1B7F52; --ok-soft:#DFF3E8; --warn:#8F5A00; --warn-soft:#FBEFD3; --bad:#BE3A2B; --bad-soft:#FBE3DF;
+  --font-body:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-head:'Sora','Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1620; --surface:#17212D; --surface2:#212D3B; --ink:#E8EDF3; --ink2:#9CA9B8; --line:#2A3746;
+  --accent:#8AA2FF; --accent-ink:#0B1020; --accent-soft:#1F2B55;
+  --ozel:#8AA2FF; --ozel-soft:#1F2B55; --grup:#4CC7C9; --grup-soft:#123A3B;
+  --ok:#4DCB92; --ok-soft:#12362A; --warn:#E5B04A; --warn-soft:#3A2E10; --bad:#FF8B7B; --bad-soft:#43201B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1620; --surface:#17212D; --surface2:#212D3B; --ink:#E8EDF3; --ink2:#9CA9B8; --line:#2A3746;
+  --accent:#8AA2FF; --accent-ink:#0B1020; --accent-soft:#1F2B55;
+  --ozel:#8AA2FF; --ozel-soft:#1F2B55; --grup:#4CC7C9; --grup-soft:#123A3B;
+  --ok:#4DCB92; --ok-soft:#12362A; --warn:#E5B04A; --warn-soft:#3A2E10; --bad:#FF8B7B; --bad-soft:#43201B; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;
+  padding-block:68px 110px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));-webkit-text-size-adjust:100%}
+body.lock{overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#view{max-width:560px;margin-inline:auto}
+h1,h2,h3{font-family:var(--font-head);margin:0;text-wrap:balance}
+h1{font-size:25px;line-height:1.15;font-weight:600;letter-spacing:-.01em}
+h2{font-size:17px;font-weight:600}
+h3{font-size:13px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.06em}
+.mut{color:var(--ink2)}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:10px 0 16px}
+.ph .d{color:var(--ink2);font-size:13px;margin-top:2px}
+.sec{margin-top:22px}
+.sec>.sh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.link{background:none;border:0;color:var(--accent);font-weight:600;font-size:13px;padding:8px 0;cursor:pointer}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.stack{display:flex;flex-direction:column;gap:8px}
+.grow{flex:1;min-width:0;display:flex;flex-direction:column}
+
+/* satırlar */
+.row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.row>.main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;background:none;border:0;text-align:left;padding:12px 14px;cursor:pointer;border-radius:14px}
+.nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.5px;color:var(--ink2);margin-top:3px}
+.tm{display:flex;flex-direction:column;align-items:flex-start;min-width:44px;font-variant-numeric:tabular-nums;line-height:1.2}
+.tm b{font-size:14px}.tm i{font-style:normal;font-size:12px;color:var(--ink2)}
+.tm.wide{min-width:68px}
+.amt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.done{display:flex;align-items:center;gap:4px;margin-right:10px;background:var(--ok-soft);color:var(--ok);border:0;border-radius:10px;min-height:40px;padding:0 12px;font-weight:700;font-size:13px;cursor:pointer}
+.done svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+/* etiketler */
+.chip{display:inline-flex;align-items:center;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:700;line-height:1.6;white-space:nowrap}
+.chip.ozel{background:var(--ozel-soft);color:var(--ozel)}
+.chip.grup{background:var(--grup-soft);color:var(--grup)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.info{background:var(--accent-soft);color:var(--accent)}
+.chip.mute{background:var(--surface2);color:var(--ink2)}
+
+/* sayı kutuları */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.tile .k{font-size:12px;color:var(--ink2);font-weight:600}
+.tile .v{font-family:var(--font-head);font-size:21px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tile .s{font-size:12px;color:var(--ink2);margin-top:1px}
+.tile.bad .v{color:var(--bad)}.tile.ok .v{color:var(--ok)}
+.strip{display:flex;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.strip>div{flex:1;padding:10px 12px;min-width:0}
+.strip>div+div{border-left:1px solid var(--line)}
+.strip .k{font-size:11.5px;color:var(--ink2);font-weight:600}
+.strip .v{font-family:var(--font-head);font-weight:600;font-size:17px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+
+/* düğmeler */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:0 18px;border-radius:12px;border:1px solid transparent;background:var(--accent);color:var(--accent-ink);font-weight:700;cursor:pointer;text-decoration:none}
+.btn.ghost{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.btn.soft{background:var(--accent-soft);color:var(--accent)}
+.btn.danger{background:var(--bad-soft);color:var(--bad)}
+.btn.sm{min-height:40px;padding:0 14px;font-size:14px}
+.btn svg,.fab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.btns .btn{flex:1 1 140px}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.quick .btn{flex-direction:column;gap:2px;min-height:62px;font-size:13px;padding:8px 4px}
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:4;display:flex;align-items:center;gap:6px;min-height:52px;padding:0 20px;border-radius:26px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:700;box-shadow:0 6px 18px rgba(20,30,60,.28);cursor:pointer}
+
+/* segment, filtre */
+.segb{display:flex;background:var(--surface2);border-radius:12px;padding:3px;gap:3px}
+.segb button{flex:1;border:0;background:none;border-radius:9px;min-height:38px;font-weight:700;font-size:13.5px;color:var(--ink2);cursor:pointer}
+.segb button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.filters{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px;margin-top:10px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.fchip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;min-height:36px;padding:0 14px;font-weight:600;font-size:13px;color:var(--ink2);cursor:pointer}
+.fchip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.nav{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.nav .lbl{flex:1;text-align:center;font-family:var(--font-head);font-weight:600;font-size:15px}
+.nav .lbl small{display:block;font-family:var(--font-body);font-weight:500;color:var(--ink2);font-size:12px}
+.ib{width:44px;height:44px;flex:none;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.ib svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* gün başlıkları */
+.dayh{display:flex;justify-content:space-between;align-items:baseline;margin:16px 2px 6px;font-weight:700;font-size:13px}
+.dayh span{color:var(--ink2);font-weight:600;font-size:12px}
+.dayh.today{color:var(--accent)}
+
+/* grafik */
+.bars{display:flex;gap:6px;align-items:flex-end;height:150px;margin-top:6px}
+.bar{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;height:100%;font-size:11px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.bar .col{width:100%;max-width:34px;display:flex;flex-direction:column-reverse;border-radius:6px 6px 2px 2px;overflow:hidden;background:var(--surface2)}
+.bar .col i{display:block}
+.bar .col .o{background:var(--ozel)}.bar .col .g{background:var(--grup)}
+.bar .v{height:14px;line-height:14px;color:var(--ink);font-weight:700}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink2);margin-top:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* form */
+.fl{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--ink2);margin-top:14px}
+.fl input,.fl select,.fl textarea,.srch{width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--ink);font-size:16px;font-weight:500}
+.fl textarea{padding:10px 12px;resize:vertical}
+.fl .hint,.hint{font-size:12px;font-weight:500;color:var(--ink2)}
+.srch{margin-top:10px}
+.seg2{display:flex;gap:6px}
+.seg2 input{position:absolute;opacity:0;pointer-events:none}
+.seg2 label{flex:1;display:grid;place-items:center;min-height:46px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-weight:700;font-size:14px;color:var(--ink2);cursor:pointer;text-align:center;padding:0 8px}
+.seg2 input:checked+label{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.seg2 input:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
+.chk{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-top:6px;font-weight:600;color:var(--ink);font-size:15px}
+.chk input{width:20px;height:20px;min-height:0;flex:none;accent-color:var(--accent)}
+.chk span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.chk em{font-style:normal;font-size:12px;color:var(--ink2);font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two .fl{min-width:0}
+
+/* sayfa (sheet) */
+.ov{position:fixed;inset:0;background:rgba(10,16,24,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:94dvh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+.sh-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px))}
+.sh-body{overflow:auto;padding:4px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overscroll-behavior:contain}
+
+/* alt sekmeler */
+#tabs{position:fixed;left:0;right:0;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);display:flex;justify-content:center;
+  padding:calc(4px + env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) 0 max(8px,env(safe-area-inset-left,0px))}
+#tabs .in{display:flex;width:100%;max-width:560px}
+#tabs button{flex:1;min-width:0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:0;color:var(--ink2);font-size:11px;font-weight:700;min-height:52px;padding:2px 0 6px;cursor:pointer}
+#tabs button[aria-current=page]{color:var(--accent)}
+#tabs button[aria-current=page]::after{content:"";position:absolute;left:18%;right:18%;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--accent)}
+#tabs span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:calc(100vw - 32px);opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+.empty{text-align:center;padding:26px 16px;color:var(--ink2);border:1px dashed var(--line);border-radius:14px;background:var(--surface)}
+.empty b{display:block;color:var(--ink);margin-bottom:4px}
+.note{font-size:12.5px;color:var(--ink2);margin-top:8px}
+.banner{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:8px 12px;font-size:13px;font-weight:600;margin-bottom:12px}
+.banner button{background:none;border:0;color:inherit;text-decoration:underline;font-weight:700;cursor:pointer;min-height:36px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kv:last-child{border:0}
+.kv b{font-variant-numeric:tabular-nums}
+/* dönem tablosu */
+.pgrid{display:grid;grid-template-columns:50px repeat(7,minmax(0,1fr));gap:4px;margin-top:12px}
+.pgh{text-align:center;font-size:11px;font-weight:700;color:var(--ink2);padding:2px 0}
+.pc{min-width:0;min-height:66px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:5px 2px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--ink);font-size:13px}
+.pc b{font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.pc i{font-style:normal;font-size:9px;color:var(--ink2);line-height:1}
+.pc small{font-size:9.5px;color:var(--ink2);font-weight:700;line-height:1;margin-top:auto;white-space:nowrap}
+.pc.out{background:transparent;border-style:dashed;opacity:.4;cursor:default}
+.pc.today{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.pc.today b{color:var(--accent)}
+.dots{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;max-width:100%}
+.dots u{width:8px;height:8px;border-radius:50%;display:block;text-decoration:none}
+.dots u.o{background:var(--ozel)}.dots u.g{background:var(--grup)}
+.dots u.o.p{background:transparent;box-shadow:inset 0 0 0 2px var(--ozel)}
+.dots u.g.p{background:transparent;box-shadow:inset 0 0 0 2px var(--grup)}
+.dots u.x{background:var(--ink2);opacity:.45}
+.dots s{font-size:9px;text-decoration:none;color:var(--ink2);line-height:8px}
+.pw{min-width:0;min-height:66px;border:0;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font-size:12.5px}
+.pw small{font-size:10px;font-weight:700}
+/* hafta tablosu */
+.wgrid{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.wr{display:grid;grid-template-columns:56px minmax(0,1fr);gap:6px;align-items:stretch}
+.wd{border:1px solid var(--line);border-radius:12px;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 2px;cursor:pointer;color:var(--ink);min-height:54px}
+.wd span{font-size:11px;font-weight:700;color:var(--ink2)}
+.wd b{font-family:var(--font-head);font-size:19px;line-height:1.1;font-weight:600}
+.wd small{font-size:10px;font-weight:700;color:var(--ink2)}
+.wd.today{border-color:var(--accent);background:var(--accent-soft)}
+.wd.today b,.wd.today span{color:var(--accent)}
+.wc{display:flex;flex-direction:column;gap:4px;min-width:0}
+.wl{display:flex;align-items:center;gap:10px;min-width:0;text-align:left;border:1px solid var(--line);border-left-width:4px;border-radius:10px;background:var(--surface);padding:6px 10px;cursor:pointer;color:var(--ink)}
+.wl.o{border-left-color:var(--ozel)}.wl.g{border-left-color:var(--grup)}
+.wt{display:flex;flex-direction:column;font-variant-numeric:tabular-nums;line-height:1.2;min-width:40px}
+.wt b{font-size:13px}.wt i{font-style:normal;font-size:11px;color:var(--ink2)}
+.wn{flex:1;min-width:0;display:flex;flex-direction:column}
+.wn b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wn small{font-size:11.5px;color:var(--ink2)}
+.wm{font-size:15px;font-weight:700;color:var(--ok);flex:none}
+.wl.planli .wm{color:var(--accent)}
+.wl.iptal_ogrenci .wm,.wl.iptal_ben .wm{color:var(--warn)}
+.wl.iptal_ogrenci .wn b,.wl.iptal_ben .wn b{text-decoration:line-through;opacity:.7}
+.wadd{border:1px dashed var(--line);border-radius:10px;background:transparent;color:var(--ink2);min-height:54px;font-size:13px;font-weight:600;cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<nav id="tabs" aria-label="Ana gezinme"><div class="in" id="tabsin"></div></nav>
+<main id="view"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- yardımcılar ---------- */
+var TR_M=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+var TR_MS=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+var TR_D=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+var TR_DF=['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+var pad=function(n){return String(n).padStart(2,'0')};
+var iso=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+var parseD=function(s){var p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2])};
+var addDays=function(s,n){var d=parseD(s);d.setDate(d.getDate()+n);return iso(d)};
+var weekStart=function(s){var d=parseD(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return iso(d)};
+var ymOf=function(s){return s.slice(0,7)};
+var addMonths=function(ym,n){var p=ym.split('-').map(Number);var d=new Date(p[0],p[1]-1+n,1);return d.getFullYear()+'-'+pad(d.getMonth()+1)};
+var today=function(){return iso(new Date())};
+var dow=function(s){return (parseD(s).getDay()+6)%7};
+var fmtDay=function(s){var d=parseD(s);return TR_D[dow(s)]+' '+d.getDate()+' '+TR_MS[d.getMonth()]};
+var fmtDayLong=function(s){var d=parseD(s);return d.getDate()+' '+TR_M[d.getMonth()]+' '+TR_DF[dow(s)]};
+var fmtYM=function(ym){var p=ym.split('-');return TR_M[p[1]-1]+' '+p[0]};
+function fmtWeek(ws){var a=parseD(ws),b=parseD(addDays(ws,6));
+  return a.getMonth()===b.getMonth()?a.getDate()+'–'+b.getDate()+' '+TR_MS[b.getMonth()]+' '+b.getFullYear()
+    :a.getDate()+' '+TR_MS[a.getMonth()]+' – '+b.getDate()+' '+TR_MS[b.getMonth()]+' '+b.getFullYear()}
+function money(n){n=Number(n)||0;var neg=n<0,a=Math.abs(n);var r=Math.abs(a-Math.round(a))<0.005?Math.round(a):a;
+  return (neg?'−':'')+'₺'+r.toLocaleString('tr-TR',{minimumFractionDigits:0,maximumFractionDigits:2})}
+var hrs=function(m){return (m/60).toLocaleString('tr-TR',{maximumFractionDigits:1})+' sa'};
+var dur=function(m){var h=Math.floor(m/60),r=m%60;return h?(r?h+' sa '+r+' dk':h+' sa'):r+' dk'};
+var toMin=function(t){var p=(t||'0:0').split(':').map(Number);return p[0]*60+p[1]};
+var fromMin=function(m){return pad(Math.floor(m/60)%24)+':'+pad(m%60)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var num=function(v){var n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:0};
+var $=function(s,r){return (r||document).querySelector(s)};
+var clean=function(o){return JSON.parse(JSON.stringify(o))};
+var byName=function(a,b){return (a.name||'').localeCompare(b.name||'','tr')};
+var byDT=function(a,b){return (a.date+a.start).localeCompare(b.date+b.start)};
+
+var ICONS={
+ home:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+ users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 5a3.5 3.5 0 0 1 0 7M18 14.5c2.2.6 3.5 2.6 3.5 5.5"/>',
+ cal:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+ wallet:'<path d="M4 7a2 2 0 0 1 2-2h11v3"/><rect x="3.5" y="8" width="17" height="11.5" rx="2"/><circle cx="16.5" cy="13.7" r="1.2"/>',
+ chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ l:'<path d="M15 5l-7 7 7 7"/>', r:'<path d="M9 5l7 7-7 7"/>',
+ close:'<path d="M6 6l12 12M18 6L6 18"/>', check:'<path d="M5 12.5l4.5 4.5L19 7"/>'};
+var icon=function(n){return '<svg viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>'};
+
+/* ---------- veri ---------- */
+var db=null, dl=null, dbState='pending', slow=false, loadError=null;
+var C={students:[],groups:[],lessons:[],payments:[]};
+var loaded={students:false,groups:false,lessons:false,payments:false};
+var SM=new Map(), GM=new Map();
+function derive(){SM=new Map(C.students.map(function(s){return [s.id,s]}));GM=new Map(C.groups.map(function(g){return [g.id,g]}))}
+var V={tab:'ana',lv:'period',period:periodStartOf(today()),seg:'students',filter:'all',q:'',weekStart:weekStart(today()),payPeriod:periodStartOf(today()),
+  repMode:'donem',repWeek:weekStart(today()),repPeriod:periodStartOf(today())};
+
+/* ---------- hesaplamalar ---------- */
+var ST={planli:'Planlı',yapildi:'Yapıldı',iptal_ogrenci:'Öğrenci iptal',iptal_ben:'İptal (ben)'};
+var lessonMins=function(l){return Math.max(0,toMin(l.end)-toMin(l.start))};
+function chargesOf(l){
+  var out=[];
+  if(l.kind!=='grup'){
+    var s=SM.get(l.studentId); if(!s||s.billing!=='ders')return out;
+    if(l.status==='yapildi'||(l.status==='iptal_ogrenci'&&l.charge))
+      out.push({sid:s.id,amount:(l.fee!=null&&l.fee!=='')?Number(l.fee):Number(s.rate||0)});
+  }else if(l.status==='yapildi'){
+    Object.keys(l.att||{}).forEach(function(sid){
+      if(!l.att[sid])return; var s=SM.get(sid);
+      if(s&&s.billing==='ders')out.push({sid:sid,amount:Number(s.rate||0)});
+    });
+  }
+  return out;
+}
+var lessonFee=function(l){return chargesOf(l).reduce(function(a,c){return a+c.amount},0)};
+/* Aylık ücretler dönem (16–15) bazında yazılır. "months" listesi dönem başlangıç tarihlerini taşır. */
+function sMonths(s){var a=periodStartOf(s.start||today()),e=periodStartOf(s.end||today()),out=[],m=a,g=0;
+  while(m<=e&&g<600){out.push(m);m=shiftPeriod(m,1);g++}return out}
+function inRange(s,pk){var a=s.start?periodStartOf(s.start):'0000-00-00',e=s.end?periodStartOf(s.end):'9999-99-99';return pk>=a&&pk<=e}
+function statsFor(s,from,to,months){
+  var n=0,mins=0,fee=0,monthly=0,paid=0;
+  C.lessons.forEach(function(l){
+    if(l.date<from||l.date>to)return;
+    if(l.kind==='grup'){if(!(l.att&&l.att[s.id]))return}else if(l.studentId!==s.id)return;
+    if(l.status==='yapildi'){n++;mins+=lessonMins(l)}
+    chargesOf(l).forEach(function(c){if(c.sid===s.id)fee+=c.amount});
+  });
+  if(s.billing==='aylik')months.forEach(function(ym){if(inRange(s,ym))monthly+=Number(s.monthly||0)});
+  C.payments.forEach(function(p){if(p.studentId===s.id&&p.date>=from&&p.date<=to)paid+=Number(p.amount)||0});
+  return {n:n,mins:mins,fee:fee,monthly:monthly,charge:fee+monthly,paid:paid};
+}
+var ALL_FROM='0000-00-00',ALL_TO='9999-99-99';
+var statsAll=function(s){return statsFor(s,ALL_FROM,ALL_TO,sMonths(s))};
+var balance=function(s){var a=statsAll(s);return Number(s.opening||0)+a.charge-a.paid};
+var periodWeek=function(ws){return {from:ws,to:addDays(ws,6),months:[]}};
+function periodOf(pk){return {from:pk,to:periodEndOf(pk),months:[pk]}}
+/* Dönem başında devreden bakiye: önceki dönemlerin ücreti ile ödemeleri arasındaki fark (önceki borç dahil). */
+function carryTotal(pk){return C.students.reduce(function(a,s){var c=carryAt(s,pk);return a+(c>0.5?c:0)},0)}
+function carryAt(s,pk){
+  if(!s.start||periodStartOf(s.start)>pk)return 0;
+  var pre=statsFor(s,ALL_FROM,addDays(pk,-1),sMonths(s).filter(function(x){return x<pk}));
+  return Number(s.opening||0)+pre.charge-pre.paid;
+}
+function totals(p){
+  var T={nO:0,nG:0,mO:0,mG:0,planned:0,cancelled:0,charge:0,paid:0};
+  C.lessons.forEach(function(l){
+    if(l.date<p.from||l.date>p.to)return; var m=lessonMins(l);
+    if(l.status==='yapildi'){if(l.kind==='grup'){T.nG++;T.mG+=m}else{T.nO++;T.mO+=m}}
+    else if(l.status==='planli')T.planned++; else T.cancelled++;
+  });
+  C.students.forEach(function(s){T.charge+=statsFor(s,p.from,p.to,p.months).charge});
+  C.payments.forEach(function(x){if(x.date>=p.from&&x.date<=p.to)T.paid+=Number(x.amount)||0});
+  return T;
+}
+var lname=function(l){return l.kind==='grup'?((GM.get(l.groupId)||{}).name||'Silinmiş grup'):((SM.get(l.studentId)||{}).name||'Silinmiş öğrenci')};
+var gname=function(s){return s.type==='grup'?((GM.get(s.groupId)||{}).name||'Grup'):''};
+
+/* ---------- küçük parçalar ---------- */
+var chip=function(k){return '<span class="chip '+(k==='grup'?'grup':'ozel')+'">'+(k==='grup'?'Grup':'Özel')+'</span>'};
+function statusPill(l){
+  if(l.status==='yapildi')return '<span class="chip ok">Yapıldı</span>';
+  if(l.status==='planli')return '<span class="chip info">Planlı</span>';
+  if(l.status==='iptal_ogrenci')return '<span class="chip warn">Öğrenci iptal'+(l.charge?' · ücretli':'')+'</span>';
+  return '<span class="chip warn">İptal (ben)</span>';
+}
+function balChip(b){
+  if(b>0.5)return '<span class="chip bad">Borç '+money(b)+'</span>';
+  if(b<-0.5)return '<span class="chip info">Fazla '+money(-b)+'</span>';
+  return '<span class="chip ok">Ödendi</span>';
+}
+var billText=function(s){return s.billing==='aylik'?money(s.monthly)+' / ay':money(s.rate)+' / ders'};
+var studentMeta=function(s){return s.type==='grup'?'Grup · '+esc(gname(s)):'Özel'};
+var empty=function(t,d){return '<div class="empty"><b>'+t+'</b>'+(d||'')+'</div>'};
+function tile(k,v,s,cls){return '<div class="tile '+(cls||'')+'"><div class="k">'+k+'</div><div class="v">'+v+'</div>'+(s?'<div class="s">'+s+'</div>':'')+'</div>'}
+function lessonRow(l,o){
+  o=o||{}; var fee=lessonFee(l),g=l.kind==='grup';
+  var n=g?Object.keys(l.att||{}).filter(function(k){return l.att[k]}).length:0;
+  var tm=o.showDate?'<span class="tm wide"><b>'+fmtDay(l.date)+'</b><i>'+l.start+'–'+l.end+'</i></span>':'<span class="tm"><b>'+l.start+'</b><i>'+l.end+'</i></span>';
+  return '<div class="row"><button class="main" data-act="editLesson" data-id="'+l.id+'">'+tm+
+    '<span class="grow"><span class="nm">'+esc(o.showDate&&o.hideName?'':lname(l))+'</span><span class="sub">'+chip(l.kind)+statusPill(l)+
+    (g?'<span>'+n+' kişi</span>':'')+(l.topic?'<span>'+esc(l.topic)+'</span>':'')+'</span></span>'+
+    (fee?'<span class="amt">'+money(fee)+'</span>':'')+'</button>'+
+    (o.quick&&l.status==='planli'?'<button class="done" data-act="markDone" data-id="'+l.id+'" aria-label="Yapıldı olarak işaretle">'+icon('check')+'<span>Yapıldı</span></button>':'')+'</div>';
+}
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove('on')},2400)}
+function fail(e){console.error(e);toast(e&&e.code==='quota_exceeded'?'Depolama sınırına ulaşıldı.':'Kaydedilemedi. Bağlantını kontrol edip tekrar dene.')}
+
+/* ---------- kaydet / sil ---------- */
+async function put(col,obj,id){
+  var ref=id?db.collection(col).doc(id):db.collection(col).doc();
+  var d=Object.assign({},obj);delete d.id;await ref.set(clean(d));return ref.id;
+}
+var rm=function(col,id){return db.collection(col).doc(id).delete()};
+
+/* ---------- ekranlar ---------- */
+function ph(title,sub,right){return '<div class="ph"><div><h1>'+title+'</h1>'+(sub?'<div class="d">'+sub+'</div>':'')+'</div>'+(right||'')+'</div>'}
+function anaView(){
+  var t=today(),wk=periodWeek(weekStart(t)),pkNow=periodStartOf(t),mo=periodOf(pkNow);
+  var tw=totals(wk),tm=totals(mo),carryNow=carryTotal(pkNow);
+  var todays=C.lessons.filter(function(l){return l.date===t}).sort(byDT);
+  var next=C.lessons.filter(function(l){return l.date>t&&l.status==='planli'}).sort(byDT).slice(0,4);
+  var debts=C.students.filter(function(s){return s.active!==false}).map(function(s){return {s:s,b:balance(s)}})
+    .filter(function(x){return x.b>0.5}).sort(function(a,b){return b.b-a.b});
+  var hasSample=C.students.concat(C.lessons,C.payments,C.groups).some(function(x){return x.sample});
+  var h=ph('Ders Defteri',fmtDayLong(t));
+  if(hasSample)h+='<div class="banner"><span>Örnek veriler yüklü</span><button data-act="clearSample">Temizle</button></div>';
+  if(!C.students.length){
+    h+='<div class="card"><h2>Başlayalım</h2><p class="mut" style="margin:6px 0 0">Üç adımda takibe başla: öğrencini ekle, derslerini gir, aldığın ödemeleri kaydet. Haftalık ve dönemlik (16–15) raporlar kendiliğinden oluşur.</p>'+
+      '<div class="btns"><button class="btn" data-act="newStudent">'+icon('plus')+' İlk öğrenciyi ekle</button><button class="btn ghost" data-act="sample">Örnek veriyle dene</button></div></div>';
+  }else{
+    h+='<div class="quick"><button class="btn soft" data-act="newLesson">'+icon('plus')+'Ders</button><button class="btn soft" data-act="newPayment">'+icon('plus')+'Ödeme</button><button class="btn soft" data-act="newStudent">'+icon('plus')+'Öğrenci</button></div>';
+  }
+  h+='<div class="sec"><div class="sh"><h3>Bugün</h3></div>'+(todays.length?'<div class="stack">'+todays.map(function(l){return lessonRow(l,{quick:true})}).join('')+'</div>':empty('Bugün ders yok','Yeni bir ders eklemek için yukarıdaki düğmeyi kullan.'))+'</div>';
+  h+='<div class="sec"><div class="sh"><h3>Bu hafta</h3><button class="link" data-act="goTab" data-t="dersler">Dersleri aç</button></div><div class="strip">'+
+    '<div><div class="k">Ders</div><div class="v">'+(tw.nO+tw.nG)+'</div></div><div><div class="k">Saat</div><div class="v">'+hrs(tw.mO+tw.mG)+'</div></div><div><div class="k">Tahsilat</div><div class="v">'+money(tw.paid)+'</div></div></div></div>';
+  h+='<div class="sec"><div class="sh"><h3>Bu dönem · '+fmtPeriod(pkNow)+'</h3><button class="link" data-act="goTab" data-t="rapor">Rapor</button></div><div class="tiles">'+
+    tile('Ders saati',hrs(tm.mO+tm.mG),'Özel '+hrs(tm.mO)+' · Grup '+hrs(tm.mG))+tile('Ders sayısı',String(tm.nO+tm.nG),'Özel '+tm.nO+' · Grup '+tm.nG)+
+    tile('Dönem ücreti',money(tm.charge),'Yalnızca bu dönemin dersleri')+tile('Tahsil edilen',money(tm.paid),'Bu dönemde alınan ödemeler','ok')+
+    (carryNow>0.5?tile('Devreden borç',money(carryNow),'Önceki dönemlerden kalan','bad'):'')+'</div></div>';
+  if(next.length)h+='<div class="sec"><div class="sh"><h3>Yaklaşan dersler</h3></div><div class="stack">'+next.map(function(l){return lessonRow(l,{showDate:true})}).join('')+'</div></div>';
+  if(debts.length){
+    h+='<div class="sec"><div class="sh"><h3>Ödeme bekleyenler</h3><button class="link" data-act="goDebt">Tümü ('+debts.length+')</button></div><div class="stack">'+
+      debts.slice(0,5).map(function(x){return studentRow(x.s,x.b)}).join('')+'</div></div>';
+  }
+  return h;
+}
+function studentRow(s,b){
+  return '<div class="row"><button class="main" data-act="viewStudent" data-id="'+s.id+'"><span class="grow"><span class="nm">'+esc(s.name)+'</span><span class="sub">'+
+    (s.type==='grup'?'<span class="chip grup">Grup</span>':'<span class="chip ozel">Özel</span>')+'<span>'+(s.type==='grup'&&gname(s)?esc(gname(s))+' · ':'')+billText(s)+'</span></span></span>'+balChip(b)+'</button></div>';
+}
+function studentListHtml(){
+  var q=V.q.trim().toLocaleLowerCase('tr');
+  var items=C.students.map(function(s){return {s:s,b:balance(s)}}).filter(function(x){
+    var s=x.s;
+    if(V.filter==='arsiv')return s.active===false;
+    if(s.active===false)return false;
+    if(V.filter==='ozel')return s.type!=='grup';
+    if(V.filter==='grup')return s.type==='grup';
+    if(V.filter==='borc')return x.b>0.5;
+    return true;
+  });
+  if(q)items=items.filter(function(x){return (x.s.name||'').toLocaleLowerCase('tr').indexOf(q)>-1||(x.s.phone||'').indexOf(q)>-1});
+  items.sort(function(a,b){return byName(a.s,b.s)});
+  if(!items.length)return empty(C.students.length?'Eşleşen öğrenci yok':'Henüz öğrenci yok',C.students.length?'':'Sağ alttaki düğmeyle ilk öğrencini ekle.');
+  return '<div class="stack">'+items.map(function(x){return studentRow(x.s,x.b)}).join('')+'</div>';
+}
+function groupListHtml(){
+  if(!C.groups.length)return empty('Henüz grup yok','Ücretleri farklı öğrencileri tek grupta toplayabilirsin. Önce grubu ekle, sonra öğrencileri bu gruba ata.');
+  return '<div class="stack">'+C.groups.slice().sort(byName).map(function(g){
+    var m=C.students.filter(function(s){return s.groupId===g.id&&s.active!==false}).length;
+    var n=C.lessons.filter(function(l){return l.kind==='grup'&&l.groupId===g.id&&l.status==='yapildi'}).length;
+    return '<div class="row"><button class="main" data-act="editGroup" data-id="'+g.id+'"><span class="grow"><span class="nm">'+esc(g.name)+'</span><span class="sub"><span>'+m+' öğrenci</span><span>'+n+' ders yapıldı</span>'+(g.note?'<span>'+esc(g.note)+'</span>':'')+'</span></span></button></div>';
+  }).join('')+'</div>';
+}
+function studentsView(){
+  var h=ph('Öğrenciler');
+  h+='<div class="segb" role="group" aria-label="Görünüm"><button data-act="seg" data-v="students" aria-pressed="'+(V.seg==='students')+'">Öğrenciler</button><button data-act="seg" data-v="groups" aria-pressed="'+(V.seg==='groups')+'">Gruplar</button></div>';
+  if(V.seg==='groups')return h+'<div class="sec" style="margin-top:14px" id="slist">'+groupListHtml()+'</div><button class="fab" data-act="newGroup">'+icon('plus')+' Grup</button>';
+  var F=[['all','Tümü'],['ozel','Özel'],['grup','Grup'],['borc','Borçlu'],['arsiv','Arşiv']];
+  h+='<div class="filters" role="group" aria-label="Filtre">'+F.map(function(f){return '<button class="fchip" data-act="filter" data-v="'+f[0]+'" aria-pressed="'+(V.filter===f[0])+'">'+f[1]+'</button>'}).join('')+'</div>';
+  h+='<input class="srch" id="q" type="search" placeholder="İsim veya telefon ara" value="'+esc(V.q)+'" aria-label="Öğrenci ara"><div class="sec" style="margin-top:12px" id="slist">'+studentListHtml()+'</div>';
+  return h+'<button class="fab" data-act="newStudent">'+icon('plus')+' Öğrenci</button>';
+}
+function navBar(label,sub,prev,next,now){
+  return '<div class="nav"><button class="ib" data-act="'+prev+'" aria-label="Önceki">'+icon('l')+'</button><button class="lbl" data-act="'+now+'" style="background:none;border:0;color:inherit;cursor:pointer;min-height:44px">'+label+(sub?'<small>'+sub+'</small>':'')+'</button><button class="ib" data-act="'+next+'" aria-label="Sonraki">'+icon('r')+'</button></div>';
+}
+function periodStartOf(s){var d=parseD(s),m=d.getMonth();if(d.getDate()<16)m--;return iso(new Date(d.getFullYear(),m,16))}
+function periodEndOf(ps){var d=parseD(ps);return iso(new Date(d.getFullYear(),d.getMonth()+1,15))}
+function shiftPeriod(ps,n){var d=parseD(ps);return iso(new Date(d.getFullYear(),d.getMonth()+n,16))}
+function fmtPeriod(ps){var a=parseD(ps),b=parseD(periodEndOf(ps));return a.getDate()+' '+TR_MS[a.getMonth()]+' – '+b.getDate()+' '+TR_MS[b.getMonth()]+' '+b.getFullYear()}
+function dotClass(l){var k=l.kind==='grup'?'g':'o';return l.status==='yapildi'?k:l.status==='planli'?k+' p':'x'}
+function lessonsView(){return V.lv==='week'?weekView():periodView()}
+function periodView(){
+  var ps=V.period,pe=periodEndOf(ps),t=today(),p=periodOf(ps),T=totals(p),carry=carryTotal(ps);
+  var by={};C.lessons.forEach(function(l){if(l.date>=ps&&l.date<=pe)(by[l.date]=by[l.date]||[]).push(l)});
+  var h=ph('Dersler');
+  h+=navBar(fmtPeriod(ps),ps===periodStartOf(t)?'Bu dönem':'Etikete dokununca bu döneme dön','pPrev','pNext','pNow');
+  h+='<div class="strip"><div><div class="k">Yapılan</div><div class="v">'+(T.nO+T.nG)+' ders</div></div><div><div class="k">Saat</div><div class="v">'+hrs(T.mO+T.mG)+'</div></div><div><div class="k">Planlı</div><div class="v">'+T.planned+'</div></div></div>'+
+    '<div class="strip" style="margin-top:8px"><div><div class="k">Dönem ücreti</div><div class="v">'+money(T.charge)+'</div></div><div><div class="k">Tahsil edilen</div><div class="v">'+money(T.paid)+'</div></div><div><div class="k">Devreden borç</div><div class="v"'+(carry>0.5?' style="color:var(--bad)"':'')+'>'+money(carry)+'</div></div></div>';
+  h+='<div class="pgrid"><div class="pgh">Hafta</div>'+TR_D.map(function(x){return '<div class="pgh">'+x+'</div>'}).join('');
+  for(var ws=weekStart(ps);ws<=pe;ws=addDays(ws,7)){
+    var wm=0,cells='',wf=ws<ps?ps:ws,we0=addDays(ws,6),we=we0>pe?pe:we0;
+    for(var i=0;i<7;i++){
+      var d=addDays(ws,i),inP=d>=ps&&d<=pe,ls=by[d]||[],dd=parseD(d);
+      if(!inP){cells+='<div class="pc out"><b>'+dd.getDate()+'</b></div>';continue}
+      var m=ls.filter(function(l){return l.status==='yapildi'}).reduce(function(a,l){return a+lessonMins(l)},0);wm+=m;
+      var dots=ls.slice().sort(byDT).slice(0,4).map(function(l){return '<u class="'+dotClass(l)+'"></u>'}).join('')+(ls.length>4?'<s>+</s>':'');
+      cells+='<button class="pc'+(d===t?' today':'')+'" data-act="dayTap" data-d="'+d+'" aria-label="'+fmtDayLong(d)+', '+ls.length+' ders"><b>'+dd.getDate()+'</b>'+((dd.getDate()===1||d===ps)?'<i>'+TR_MS[dd.getMonth()]+'</i>':'')+'<span class="dots">'+dots+'</span>'+(m?'<small>'+hrs(m)+'</small>':'')+'</button>';
+    }
+    h+='<button class="pw" data-act="openWeek" data-w="'+ws+'" aria-label="'+fmtWeek(ws)+' haftasını aç"><b>'+parseD(wf).getDate()+'–'+parseD(we).getDate()+'</b><small>'+hrs(wm)+'</small></button>'+cells;
+  }
+  h+='</div><div class="legend"><span><i style="background:var(--ozel)"></i>Özel</span><span><i style="background:var(--grup)"></i>Grup</span><span>Dolu: yapıldı · Boş: planlı</span></div>'+
+    '<div class="note">Haftanın etiketine dokununca hafta detayı açılır. Bir tarihe dokununca o güne ders girersin.</div>';
+  var rows=C.students.map(function(s){return {s:s,st:statsFor(s,ps,pe,[ps]),c:carryAt(s,ps)}}).filter(function(x){return x.st.n||x.st.charge||x.st.paid||Math.abs(x.c)>0.5}).sort(function(a,b){return b.st.charge-a.st.charge||byName(a.s,b.s)});
+  if(rows.length)h+='<div class="sec"><div class="sh"><h3>Dönem özeti</h3></div><div class="stack">'+rows.map(function(x){
+    return '<div class="row"><button class="main" data-act="viewStudent" data-id="'+x.s.id+'"><span class="grow"><span class="nm">'+esc(x.s.name)+'</span><span class="sub"><span>'+x.st.n+' ders · '+hrs(x.st.mins)+'</span>'+(x.st.paid?'<span>Ödenen '+money(x.st.paid)+'</span>':'')+(x.c>0.5?'<span class="chip bad">Devreden '+money(x.c)+'</span>':x.c<-0.5?'<span class="chip info">Devreden fazla '+money(-x.c)+'</span>':'')+'</span></span><span class="amt">'+money(x.st.charge)+'</span></button></div>'}).join('')+'</div><div class="note">Ders sayısı ve ücret yalnızca bu döneme aittir. Önceki dönemlerden kalan borç ayrıca “Devreden” olarak görünür.</div></div>';
+  return h;
+}
+function daySheet(d){
+  var ls=C.lessons.filter(function(l){return l.date===d}).sort(byDT);
+  openSheet(fmtDayLong(d),'<div class="stack">'+ls.map(function(l){return lessonRow(l,{quick:true})}).join('')+'</div><div class="btns"><button class="btn" data-act="newLessonOn" data-d="'+d+'">'+icon('plus')+' Ders ekle</button></div>');
+}
+function wLesson(l){
+  var g=l.kind==='grup',names='';
+  if(g)names=Object.keys(l.att||{}).filter(function(id){return l.att[id]}).map(function(id){var s=SM.get(id);return s?String(s.name||'').split(' ')[0]:''}).filter(Boolean).join(', ');
+  var mark=l.status==='yapildi'?'✓':l.status==='planli'?'○':'✕';
+  return '<button class="wl '+(g?'g':'o')+' '+l.status+'" data-act="editLesson" data-id="'+l.id+'"><span class="wt"><b>'+l.start+'</b><i>'+l.end+'</i></span><span class="wn"><b>'+esc(lname(l))+'</b>'+(names?'<small>'+esc(names)+'</small>':'')+'</span><span class="wm" role="img" aria-label="'+ST[l.status]+'">'+mark+'</span></button>';
+}
+function weekView(){
+  var p=periodWeek(V.weekStart),t=today();
+  var ls=C.lessons.filter(function(l){return l.date>=p.from&&l.date<=p.to}).sort(byDT),T=totals(p);
+  var h='<button class="link" data-act="backPeriod">‹ Dönem tablosu</button>'+ph('Hafta detayı');
+  h+=navBar(fmtWeek(V.weekStart),V.weekStart===weekStart(t)?'Bu hafta · etikete dokununca bugüne dön':'Etikete dokununca bu haftaya dön','wPrev','wNext','wNow');
+  h+='<div class="strip"><div><div class="k">Yapılan</div><div class="v">'+(T.nO+T.nG)+' ders</div></div><div><div class="k">Saat</div><div class="v">'+hrs(T.mO+T.mG)+'</div></div><div><div class="k">Planlı</div><div class="v">'+T.planned+'</div></div></div>';
+  h+='<div class="wgrid">';
+  for(var i=0;i<7;i++){
+    var d=addDays(V.weekStart,i),day=ls.filter(function(l){return l.date===d});
+    var m=day.filter(function(l){return l.status==='yapildi'}).reduce(function(a,l){return a+lessonMins(l)},0);
+    h+='<div class="wr"><button class="wd'+(d===t?' today':'')+'" data-act="newLessonOn" data-d="'+d+'" aria-label="'+fmtDayLong(d)+' gününe ders ekle"><span>'+TR_D[i]+'</span><b>'+parseD(d).getDate()+'</b><small>'+(m?hrs(m):TR_MS[parseD(d).getMonth()])+'</small></button><div class="wc">'+
+      (day.length?day.map(wLesson).join(''):'<button class="wadd" data-act="newLessonOn" data-d="'+d+'">Ders yok · eklemek için dokun</button>')+'</div></div>';
+  }
+  h+='</div><div class="legend"><span>✓ yapıldı</span><span>○ planlı</span><span>✕ iptal</span></div><div class="note">Sol çizgi rengi: mavi özel, camgöbeği grup. Gün kutusuna dokununca o güne ders eklersin, bir derse dokununca düzenlersin.</div>';
+  return h;
+}
+function paymentsView(){
+  var p=periodOf(V.payPeriod);
+  var ps=C.payments.filter(function(x){return x.date>=p.from&&x.date<=p.to}).sort(function(a,b){return b.date.localeCompare(a.date)});
+  var sum=ps.reduce(function(a,x){return a+(Number(x.amount)||0)},0),by={};
+  ps.forEach(function(x){by[x.method||'Diğer']=(by[x.method||'Diğer']||0)+(Number(x.amount)||0)});
+  var h=ph('Ödemeler');
+  h+=navBar(fmtPeriod(V.payPeriod),V.payPeriod===periodStartOf(today())?'Bu dönem':'Etikete dokununca bu döneme dön','mPrev','mNext','mNow');
+  h+='<div class="card"><div class="k mut" style="font-size:12px;font-weight:600">Tahsil edilen</div><div style="font-family:var(--font-head);font-size:28px;font-weight:600;font-variant-numeric:tabular-nums">'+money(sum)+'</div>'+
+    '<div class="sub" style="margin-top:6px">'+ps.length+' ödeme'+Object.keys(by).map(function(k){return '<span class="chip mute">'+esc(k)+' '+money(by[k])+'</span>'}).join('')+'</div></div>';
+  if(!ps.length)h+='<div class="sec">'+empty('Bu dönemde ödeme yok','Aldığın ödemeyi kaydetmek için sağ alttaki düğmeyi kullan.')+'</div>';
+  else{
+    var last='';h+='<div class="stack" style="margin-top:6px">';
+    ps.forEach(function(x){
+      if(x.date!==last){h+='</div><div class="dayh">'+fmtDayLong(x.date)+'</div><div class="stack">';last=x.date}
+      var s=SM.get(x.studentId);
+      h+='<div class="row"><button class="main" data-act="editPayment" data-id="'+x.id+'"><span class="grow"><span class="nm">'+esc(s?s.name:'Silinmiş öğrenci')+'</span><span class="sub"><span>'+esc(x.method||'')+'</span>'+(x.note?'<span>'+esc(x.note)+'</span>':'')+'</span></span><span class="amt">'+money(x.amount)+'</span></button></div>';
+    });
+    h+='</div>';
+  }
+  return h+'<button class="fab" data-act="newPayment">'+icon('plus')+' Ödeme</button>';
+}
+function buckets(p,week){
+  var items=[],i;
+  if(week){for(i=0;i<7;i++){var d=addDays(V.repWeek,i);items.push({label:TR_D[i],from:d,to:d,o:0,g:0})}}
+  else{var ws=weekStart(p.from);while(ws<=p.to){var f=ws<p.from?p.from:ws,e0=addDays(ws,6),e=e0>p.to?p.to:e0;
+    items.push({label:parseD(f).getDate()+'–'+parseD(e).getDate(),from:f,to:e,o:0,g:0});ws=addDays(ws,7)}}
+  C.lessons.forEach(function(l){
+    if(l.status!=='yapildi')return;
+    items.forEach(function(it){if(l.date>=it.from&&l.date<=it.to){if(l.kind==='grup')it.g+=lessonMins(l);else it.o+=lessonMins(l)}});
+  });
+  return items;
+}
+function reportView(){
+  var week=V.repMode==='hafta';
+  var p=week?periodWeek(V.repWeek):periodOf(V.repPeriod),T=totals(p);
+  var carry=week?0:carryTotal(V.repPeriod),endOpen=week?0:C.students.reduce(function(a,s){var e=carryAt(s,V.repPeriod)+statsFor(s,p.from,p.to,p.months).charge-statsFor(s,p.from,p.to,p.months).paid;return a+(e>0.5?e:0)},0);
+  var h=ph('Rapor');
+  h+='<div class="segb" role="group" aria-label="Dönem"><button data-act="rmode" data-v="hafta" aria-pressed="'+week+'">Haftalık</button><button data-act="rmode" data-v="donem" aria-pressed="'+!week+'">Dönemlik</button></div><div style="height:12px"></div>';
+  h+=navBar(week?fmtWeek(V.repWeek):fmtPeriod(V.repPeriod),week?(V.repWeek===weekStart(today())?'Bu hafta':'Bu haftaya dön'):(V.repPeriod===periodStartOf(today())?'Bu dönem':'Bu döneme dön'),'rPrev','rNext','rNow');
+  h+='<div class="tiles">'+tile('Ders sayısı',String(T.nO+T.nG),'Özel '+T.nO+' · Grup '+T.nG)+tile('Ders saati',hrs(T.mO+T.mG),'Özel '+hrs(T.mO)+' · Grup '+hrs(T.mG))+
+    tile(week?'Hesaplanan':'Dönem ücreti',money(T.charge),week?'Ders başı ücretliler':'Yalnızca bu dönemin ücretleri')+tile('Tahsil edilen',money(T.paid),'Bu dönemde alınan ödemeler','ok')+
+    (week?'':tile('Devreden borç',money(carry),'Önceki dönemlerden kalan',carry>0.5?'bad':'')+tile('Dönem sonu açık',money(endOpen),'Devreden + dönem − ödeme',endOpen>0.5?'bad':'ok'))+'</div>';
+  if(T.planned||T.cancelled)h+='<div class="note">'+(T.planned?T.planned+' planlı ders. ':'')+(T.cancelled?T.cancelled+' iptal edilen ders.':'')+'</div>';
+  if(week)h+='<div class="note">Aylık ücretli öğrenciler haftalık hesaplamaya girmez, dönemlik raporda görünür.</div>';
+  var B=buckets(p,week),mx=Math.max.apply(null,B.map(function(b){return b.o+b.g}).concat([60]));
+  h+='<div class="sec"><div class="sh"><h3>Ders saatleri</h3></div><div class="card">';
+  if(T.mO+T.mG===0)h+='<div class="mut" style="text-align:center;padding:18px 0">Bu dönemde yapılan ders yok.</div>';
+  else h+='<div class="bars">'+B.map(function(b){var tot=b.o+b.g;
+    return '<div class="bar"><div class="v">'+(tot?(tot/60).toLocaleString('tr-TR',{maximumFractionDigits:1}):'')+'</div><div class="col" style="height:'+Math.max(tot?4:2,Math.round(tot/mx*96))+'px"><i class="o" style="height:'+(tot?b.o/tot*100:0)+'%"></i><i class="g" style="height:'+(tot?b.g/tot*100:0)+'%"></i></div><div>'+b.label+'</div></div>'}).join('')+'</div>'+
+    '<div class="legend"><span><i style="background:var(--ozel)"></i>Özel</span><span><i style="background:var(--grup)"></i>Grup</span><span>Saat cinsinden</span></div>';
+  h+='</div></div>';
+  var rows=C.students.map(function(s){return {s:s,st:statsFor(s,p.from,p.to,p.months),c:week?0:carryAt(s,V.repPeriod)}}).filter(function(x){return x.st.n||x.st.charge||x.st.paid||Math.abs(x.c)>0.5})
+    .sort(function(a,b){return b.st.charge-a.st.charge||byName(a.s,b.s)});
+  h+='<div class="sec"><div class="sh"><h3>Öğrenci bazında</h3></div>'+(rows.length?'<div class="stack">'+rows.map(function(x){
+    return '<div class="row"><button class="main" data-act="viewStudent" data-id="'+x.s.id+'"><span class="grow"><span class="nm">'+esc(x.s.name)+'</span><span class="sub"><span>'+x.st.n+' ders · '+hrs(x.st.mins)+'</span><span>Ödenen '+money(x.st.paid)+'</span>'+(x.c>0.5?'<span class="chip bad">Devreden '+money(x.c)+'</span>':x.c<-0.5?'<span class="chip info">Devreden fazla '+money(-x.c)+'</span>':'')+'</span></span><span class="amt">'+money(x.st.charge)+'</span></button></div>'}).join('')+'</div>':empty('Bu dönemde kayıt yok'))+'</div>';
+  var open=C.students.reduce(function(a,s){var b=balance(s);return a+(b>0.5?b:0)},0);
+  h+='<div class="sec"><div class="card"><div class="kv"><span>Tüm zamanlar açık bakiye</span><b>'+money(open)+'</b></div></div></div>';
+  if(dl)h+='<div class="sec"><div class="sh"><h3>Excel için dışa aktar</h3></div><div class="btns" style="margin-top:0"><button class="btn ghost sm" data-act="exp" data-v="lessons">Dersler</button><button class="btn ghost sm" data-act="exp" data-v="payments">Ödemeler</button><button class="btn ghost sm" data-act="exp" data-v="students">Seçili dönem özeti</button></div></div>';
+  h+='<div class="sec"><div class="sh"><h3>Yedek</h3></div><div class="card"><div class="kv"><span>Son yedek</span><b>'+(lastBackup()?fmtDay(lastBackup()):'Hiç alınmadı')+'</b></div><p class="note" style="margin:8px 0 0">Veriler yalnızca bu telefonun tarayıcısında saklanır. Tarayıcı verileri silinirse kaybolur, bu yüzden dönem sonlarında yedek al.</p><div class="btns"><button class="btn sm" data-act="backup">Yedek al</button><button class="btn ghost sm" data-act="restore">Yedekten yükle</button></div></div></div>';
+  return h;
+}
+var VIEWS={ana:anaView,ogrenciler:studentsView,dersler:lessonsView,odemeler:paymentsView,rapor:reportView};
+var TABS=[['ana','Ana Sayfa','home'],['ogrenciler','Öğrenciler','users'],['dersler','Dersler','cal'],['odemeler','Ödemeler','wallet'],['rapor','Rapor','chart']];
+function render(){
+  var v=$('#view');
+  $('#tabsin').innerHTML=TABS.map(function(t){return '<button data-act="goTab" data-t="'+t[0]+'" '+(V.tab===t[0]?'aria-current="page"':'')+'>'+icon(t[2])+'<span>'+t[1]+'</span></button>'}).join('');
+  if(dbState==='none'){v.innerHTML=ph('Ders Defteri')+empty('Veri kaydı kullanılamıyor','Bu tarayıcı veri saklamaya izin vermiyor.');return}
+  if(dbState==='pending'||!(loaded.students&&loaded.groups&&loaded.lessons&&loaded.payments)){
+    v.innerHTML=ph('Ders Defteri')+'<div class="empty"><b>Yükleniyor…</b>'+(slow||loadError?'Verilere şu an ulaşılamıyor. Bağlantını kontrol et; ulaşılınca burada görünecek.':'')+'</div>';return}
+  derive();v.innerHTML=(VIEWS[V.tab]||anaView)();
+}
+
+/* ---------- sayfalar (sheet) ---------- */
+function openSheet(title,body,mount){
+  closeSheet();
+  var el=document.createElement('div');el.className='ov';el.id='ov';
+  el.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><div class="sh-head"><h2>'+esc(title)+'</h2><button class="ib" data-act="close" aria-label="Kapat">'+icon('close')+'</button></div><div class="sh-body">'+body+'</div></div>';
+  el.addEventListener('click',function(e){if(e.target===el)closeSheet()});
+  document.body.appendChild(el);document.body.classList.add('lock');
+  if(mount)mount($('.sheet',el));
+}
+function closeSheet(){var o=$('#ov');if(o)o.remove();document.body.classList.remove('lock')}
+function radios(name,opts,val){return '<div class="seg2">'+opts.map(function(o){return '<input type="radio" name="'+name+'" id="'+name+'-'+o[0]+'" value="'+o[0]+'"'+(val===o[0]?' checked':'')+'><label for="'+name+'-'+o[0]+'">'+o[1]+'</label>'}).join('')+'</div>'}
+var rv=function(name){var e=$('input[name='+name+']:checked');return e?e.value:''};
+function armDelete(btn,fn){
+  var armed=false;
+  btn.addEventListener('click',async function(){
+    if(!armed){armed=true;btn.textContent='Silmek için tekrar dokun';setTimeout(function(){armed=false;btn.textContent='Sil'},4000);return}
+    try{await fn();closeSheet();toast('Silindi')}catch(e){fail(e)}
+  });
+}
+async function submitWith(form,fn){
+  var b=$('button[type=submit]',form);b.disabled=true;
+  try{await fn();closeSheet();toast('Kaydedildi')}catch(e){fail(e);b.disabled=false}
+}
+
+/* öğrenci */
+function studentSheet(id){
+  var s=id?SM.get(id):null;
+  var d=s||{type:'ozel',billing:'ders',start:today(),active:true,rate:'',monthly:'',opening:'',name:'',phone:'',note:''};
+  var groups=C.groups.slice().sort(byName);
+  var used=id&&(C.payments.some(function(p){return p.studentId===id})||C.lessons.some(function(l){return l.studentId===id||(l.att&&l.att[id]!=null)}));
+  var body='<form id="f" autocomplete="off">'+
+   '<label class="fl">Ad soyad<input id="f-name" required value="'+esc(d.name)+'"></label>'+
+   '<label class="fl">Telefon<input id="f-phone" type="tel" inputmode="tel" value="'+esc(d.phone||'')+'"></label>'+
+   '<div class="fl">Ders türü'+radios('type',[['ozel','Özel ders'],['grup','Grup dersi']],d.type==='grup'?'grup':'ozel')+'</div>'+
+   '<div id="w-group" hidden><label class="fl">Grup<select id="f-group"><option value="">Seç…</option>'+groups.map(function(g){return '<option value="'+g.id+'"'+(d.groupId===g.id?' selected':'')+'>'+esc(g.name)+'</option>'}).join('')+'<option value="__new">+ Yeni grup ekle…</option></select></label>'+
+     '<label class="fl" id="w-gname" hidden>Yeni grup adı<input id="f-gname"></label></div>'+
+   '<div class="fl">Ücret şekli'+radios('billing',[['ders','Ders başı'],['aylik','Aylık']],d.billing==='aylik'?'aylik':'ders')+'</div>'+
+   '<label class="fl" id="w-rate">Ders başı ücret (₺)<input id="f-rate" type="number" inputmode="decimal" min="0" step="any" value="'+esc(d.rate)+'"><span class="hint">Her yapılan ders için yazılır. Grup dersinde yalnızca katıldığı derslere yazılır.</span></label>'+
+   '<label class="fl" id="w-monthly" hidden>Aylık ücret (₺)<input id="f-monthly" type="number" inputmode="decimal" min="0" step="any" value="'+esc(d.monthly)+'"><span class="hint">Başlangıç tarihinin içinde olduğu dönemden itibaren her 16–15 döneminin başında bir kez yazılır.</span></label>'+
+   '<div class="two"><label class="fl">Başlangıç<input id="f-start" type="date" required value="'+esc(d.start||today())+'"></label>'+
+   '<label class="fl">Önceki borç (₺)<input id="f-open" type="number" inputmode="decimal" step="any" value="'+esc(d.opening)+'"></label></div>'+
+   '<label class="fl">Not<textarea id="f-note" rows="2">'+esc(d.note||'')+'</textarea></label>'+
+   '<div class="btns"><button class="btn" type="submit">Kaydet</button>'+
+   (s?(s.active===false?'<button class="btn ghost" type="button" id="b-arch">Arşivden çıkar</button>':'<button class="btn ghost" type="button" id="b-arch">Arşivle</button>'):'')+
+   (s&&!used?'<button class="btn danger" type="button" id="b-del">Sil</button>':'')+'</div>'+
+   (s&&used?'<p class="note">Dersi veya ödemesi olan öğrenci silinemez. Bırakan öğrencileri arşivleyebilirsin; geçmiş kayıtları ve bakiyesi korunur.</p>':'')+'</form>';
+  openSheet(s?'Öğrenciyi düzenle':'Yeni öğrenci',body,function(sh){
+    var sync=function(){
+      var g=rv('type')==='grup',b=rv('billing')==='aylik';
+      $('#w-group',sh).hidden=!g;$('#w-rate',sh).hidden=b;$('#w-monthly',sh).hidden=!b;
+      $('#w-gname',sh).hidden=!(g&&$('#f-group',sh).value==='__new');
+    };
+    sh.addEventListener('change',sync);sync();
+    $('#f',sh).addEventListener('submit',function(e){e.preventDefault();
+      var type=rv('type'),billing=rv('billing'),gid=$('#f-group',sh).value,gn=$('#f-gname',sh).value.trim();
+      if(type==='grup'&&!gid){toast('Bir grup seç');return}
+      if(type==='grup'&&gid==='__new'&&!gn){toast('Grup adını yaz');return}
+      submitWith($('#f',sh),async function(){
+        if(type==='grup'&&gid==='__new')gid=await put('groups',{name:gn});
+        var o=Object.assign({},s||{},{name:$('#f-name',sh).value.trim(),phone:$('#f-phone',sh).value.trim(),type:type,billing:billing,
+          rate:num($('#f-rate',sh).value),monthly:num($('#f-monthly',sh).value),start:$('#f-start',sh).value,opening:num($('#f-open',sh).value),
+          note:$('#f-note',sh).value.trim(),active:s?s.active:true});
+        if(type==='grup')o.groupId=gid;else delete o.groupId;
+        await put('students',o,id);
+      });
+    });
+    var ar=$('#b-arch',sh);
+    if(ar)ar.addEventListener('click',async function(){
+      try{var o=Object.assign({},s);if(s.active===false){o.active=true;delete o.end}else{o.active=false;o.end=today()}
+        await put('students',o,id);closeSheet();toast(o.active?'Arşivden çıkarıldı':'Arşivlendi')}catch(e){fail(e)}});
+    var dl2=$('#b-del',sh);if(dl2)armDelete(dl2,function(){return rm('students',id)});
+  });
+}
+function studentDetail(id){
+  var s=SM.get(id);if(!s)return;
+  var a=statsAll(s),b=Number(s.opening||0)+a.charge-a.paid;
+  var ls=C.lessons.filter(function(l){return l.kind==='grup'?(l.att&&l.att[id]!=null):l.studentId===id}).sort(function(x,y){return byDT(y,x)}).slice(0,15);
+  var ps=C.payments.filter(function(p){return p.studentId===id}).sort(function(x,y){return y.date.localeCompare(x.date)}).slice(0,15);
+  var cur=periodStartOf(today()),start=periodStartOf(s.start||today()),pks=[],m=cur,i;
+  for(i=0;i<6;i++){if(m<start)break;pks.push(m);m=shiftPeriod(m,-1)}
+  var mrows=pks.map(function(pk){var p=periodOf(pk),st=statsFor(s,p.from,p.to,[pk]),c=carryAt(s,pk);
+    if(!st.n&&!st.charge&&!st.paid&&Math.abs(c)<0.5)return '';
+    return '<div class="kv"><span>'+fmtPeriod(pk)+'<br><small class="mut">'+st.n+' ders · '+hrs(st.mins)+(c>0.5?' · Devreden '+money(c):c<-0.5?' · Devreden fazla '+money(-c):'')+'</small></span><span style="text-align:right"><b>'+money(st.charge)+'</b><br><small class="mut">Ödenen '+money(st.paid)+'</small></span></div>'}).join('');
+  var body='<div class="sub" style="margin:0 0 10px">'+(s.type==='grup'?'<span class="chip grup">Grup</span><span>'+esc(gname(s))+'</span>':'<span class="chip ozel">Özel</span>')+'<span>'+billText(s)+'</span>'+(s.active===false?'<span class="chip mute">Arşivde</span>':'')+'</div>'+
+   (s.phone?'<div class="mut" style="margin-bottom:10px">Telefon: <span style="user-select:all;color:var(--ink);font-weight:600">'+esc(s.phone)+'</span></div>':'')+
+   (s.note?'<div class="mut" style="margin-bottom:10px">'+esc(s.note)+'</div>':'')+
+   '<div class="tiles">'+tile('Toplam ders',String(a.n),'Yapılan dersler')+tile('Toplam saat',hrs(a.mins))+tile('Hesaplanan',money(a.charge+Number(s.opening||0)),s.opening?'Önceki borç dahil':'')+tile('Ödenen',money(a.paid),'','ok')+'</div>'+
+   '<div class="tile '+(b>0.5?'bad':'ok')+'" style="margin-top:8px"><div class="k">Bakiye</div><div class="v">'+(b>0.5?'Borç '+money(b):b<-0.5?'Fazla ödeme '+money(-b):'Ödendi')+'</div></div>'+
+   '<div class="btns"><button class="btn" data-act="newPayment" data-sid="'+id+'">Ödeme al</button>'+(s.type!=='grup'?'<button class="btn soft" data-act="newLesson" data-sid="'+id+'">Ders ekle</button>':'')+'<button class="btn ghost" data-act="editStudent" data-id="'+id+'">Düzenle</button></div>'+
+   (mrows?'<div class="sec"><div class="sh"><h3>Dönem özeti</h3></div><div class="card" style="padding:4px 14px">'+mrows+'</div></div>':'')+
+   '<div class="sec"><div class="sh"><h3>Son dersler</h3></div>'+(ls.length?'<div class="stack">'+ls.map(function(l){return lessonRow(l,{showDate:true,hideName:true})}).join('')+'</div>':empty('Henüz ders yok'))+'</div>'+
+   '<div class="sec"><div class="sh"><h3>Ödemeler</h3></div>'+(ps.length?'<div class="stack">'+ps.map(function(p){return '<div class="row"><button class="main" data-act="editPayment" data-id="'+p.id+'"><span class="grow"><span class="nm">'+fmtDay(p.date)+'</span><span class="sub"><span>'+esc(p.method||'')+'</span>'+(p.note?'<span>'+esc(p.note)+'</span>':'')+'</span></span><span class="amt">'+money(p.amount)+'</span></button></div>'}).join('')+'</div>':empty('Henüz ödeme yok'))+'</div>';
+  openSheet(s.name,body);
+}
+
+/* grup */
+function groupSheet(id){
+  var g=id?GM.get(id):null,d=g||{name:'',note:''};
+  var mem=id?C.students.filter(function(s){return s.groupId===id&&s.active!==false}):[];
+  var used=id&&(mem.length||C.lessons.some(function(l){return l.groupId===id})||C.students.some(function(s){return s.groupId===id}));
+  var body='<form id="f" autocomplete="off"><label class="fl">Grup adı<input id="f-name" required value="'+esc(d.name)+'"></label>'+
+   '<label class="fl">Not (gün ve saat vb.)<input id="f-note" value="'+esc(d.note||'')+'" placeholder="Örn. Salı ve Perşembe 18:00"></label>'+
+   (mem.length?'<div class="fl">Öğrenciler<div class="card" style="padding:4px 14px;font-weight:500;color:var(--ink)">'+mem.sort(byName).map(function(s){return '<div class="kv"><span>'+esc(s.name)+'</span><b>'+billText(s)+'</b></div>'}).join('')+'</div></div>':'')+
+   '<p class="note">Öğrenciyi bu gruba, öğrenci kartından atarsın. Ücret her öğrenci için ayrı belirlenir.</p>'+
+   '<div class="btns"><button class="btn" type="submit">Kaydet</button>'+(g&&!used?'<button class="btn danger" type="button" id="b-del">Sil</button>':'')+'</div>'+
+   (g&&used?'<p class="note">Öğrencisi veya dersi olan grup silinemez.</p>':'')+'</form>';
+  openSheet(g?'Grubu düzenle':'Yeni grup',body,function(sh){
+    $('#f',sh).addEventListener('submit',function(e){e.preventDefault();
+      submitWith($('#f',sh),function(){return put('groups',Object.assign({},g||{},{name:$('#f-name',sh).value.trim(),note:$('#f-note',sh).value.trim()}),id)})});
+    var b=$('#b-del',sh);if(b)armDelete(b,function(){return rm('groups',id)});
+  });
+}
+
+/* ders */
+function attHtml(gid,att,fresh){
+  var ms=new Map();
+  C.students.filter(function(s){return s.groupId===gid&&s.active!==false}).forEach(function(s){ms.set(s.id,s)});
+  if(att)Object.keys(att).forEach(function(k){var s=SM.get(k);if(s)ms.set(k,s)});
+  if(!ms.size)return '<p class="note">Bu grupta öğrenci yok. Öğrenci eklerken bu grubu seç.</p>';
+  return Array.from(ms.values()).sort(byName).map(function(s){
+    return '<label class="chk"><input type="checkbox" data-sid="'+s.id+'"'+((fresh||(att&&att[s.id]))?' checked':'')+'><span>'+esc(s.name)+'</span><em>'+(s.billing==='ders'?money(s.rate):'aylık')+'</em></label>'}).join('');
+}
+function lessonSheet(id,preset){
+  var l=id?C.lessons.find(function(x){return x.id===id}):null;preset=preset||{};
+  var date=preset.date||today();
+  var d=l||{kind:preset.kind||'ozel',date:date,start:'17:00',end:'18:00',status:date>today()?'planli':'yapildi',topic:'',studentId:preset.studentId||'',groupId:'',charge:false,fee:'',att:null};
+  var og=d.groupId;
+  var ozs=C.students.filter(function(s){return s.type!=='grup'&&(s.active!==false||s.id===d.studentId)}).sort(byName);
+  var grs=C.groups.slice().sort(byName);
+  var body='<form id="f" autocomplete="off">'+
+   (l?'<div class="sub" style="margin:0 0 4px">'+chip(l.kind)+'</div><input type="hidden" name="kindfix" value="'+l.kind+'">':'<div class="fl">Ders türü'+radios('kind',[['ozel','Özel ders'],['grup','Grup dersi']],d.kind)+'</div>')+
+   '<div id="w-st"><label class="fl">Öğrenci<select id="f-student"><option value="">Seç…</option>'+ozs.map(function(s){return '<option value="'+s.id+'"'+(d.studentId===s.id?' selected':'')+'>'+esc(s.name)+'</option>'}).join('')+'</select></label></div>'+
+   '<div id="w-gr" hidden><label class="fl">Grup<select id="f-lgroup"><option value="">Seç…</option>'+grs.map(function(g){return '<option value="'+g.id+'"'+(d.groupId===g.id?' selected':'')+'>'+esc(g.name)+'</option>'}).join('')+'</select></label></div>'+
+   '<label class="fl">Tarih<input id="f-date" type="date" required value="'+d.date+'"></label>'+
+   '<div class="two"><label class="fl">Başlangıç<input id="f-start" type="time" required value="'+d.start+'"></label><label class="fl">Bitiş<input id="f-end" type="time" required value="'+d.end+'"></label></div>'+
+   '<label class="fl">Durum<select id="f-status"><option value="planli">Planlı</option><option value="yapildi">Yapıldı</option><option value="iptal_ogrenci" id="o-io">Öğrenci iptal etti</option><option value="iptal_ben">Ben iptal ettim</option></select></label>'+
+   '<label class="chk" id="w-charge" hidden style="margin-top:10px"><input type="checkbox" id="f-charge"><span>İptal edilen dersi ücretlendir</span></label>'+
+   '<div id="w-fee"><label class="fl">Bu ders için farklı ücret (₺)<input id="f-fee" type="number" inputmode="decimal" min="0" step="any" value="'+esc(d.fee==null?'':d.fee)+'"><span class="hint" id="h-fee"></span></label></div>'+
+   '<div id="w-att" hidden class="fl">Katılanlar<div id="att"></div><span class="hint">Katılmayan öğrencinin işaretini kaldır. Ders başı ücretliler yalnızca katıldıkları dersler için borçlanır.</span></div>'+
+   '<label class="fl">Konu / not<input id="f-topic" value="'+esc(d.topic||'')+'" placeholder="Örn. Türev, 3. ünite tekrar"></label>'+
+   (l?'':'<label class="fl">Haftalık tekrar (toplam ders sayısı)<input id="f-rep" type="number" inputmode="numeric" min="1" max="52" value="1"><span class="hint">1 yazarsan tek ders eklenir. 8 yazarsan aynı gün ve saatte 8 hafta boyunca eklenir.</span></label>')+
+   '<div class="btns"><button class="btn" type="submit">Kaydet</button>'+(l?'<button class="btn danger" type="button" id="b-del">Sil</button>':'')+'</div></form>';
+  openSheet(l?'Dersi düzenle':'Yeni ders',body,function(sh){
+    $('#f-status',sh).value=d.status;$('#f-charge',sh).checked=!!d.charge;
+    var kind=function(){return l?l.kind:rv('kind')};
+    var sync=function(){
+      var g=kind()==='grup',st=$('#f-status',sh).value;
+      $('#w-st',sh).hidden=g;$('#w-gr',sh).hidden=!g;$('#w-att',sh).hidden=!g;
+      $('#o-io',sh).hidden=g;$('#o-io',sh).disabled=g;
+      if(g&&st==='iptal_ogrenci')$('#f-status',sh).value='iptal_ben';
+      $('#w-charge',sh).hidden=g||$('#f-status',sh).value!=='iptal_ogrenci';
+      var s=SM.get($('#f-student',sh).value);
+      $('#w-fee',sh).hidden=g||!(s&&s.billing==='ders');
+      $('#h-fee',sh).textContent=s&&s.billing==='ders'?'Boş bırakırsan öğrencinin ders ücreti ('+money(s.rate)+') uygulanır.':'';
+    };
+    var drawAtt=function(){
+      var gid=$('#f-lgroup',sh).value;
+      $('#att',sh).innerHTML=gid?attHtml(gid,gid===og?d.att:null,!l||gid!==og):'<p class="note">Önce grubu seç.</p>';
+    };
+    sync();if(d.kind==='grup')drawAtt();else $('#att',sh).innerHTML='<p class="note">Önce grubu seç.</p>';
+    sh.addEventListener('change',function(e){
+      if(e.target.id==='f-lgroup')drawAtt();
+      if(e.target.id==='f-start'){var ds=Math.max(15,toMin($('#f-end',sh).value)-toMin(d.start));d.start=e.target.value;$('#f-end',sh).value=fromMin(toMin(e.target.value)+ds)}
+      if(e.target.id==='f-date'&&!l){$('#f-status',sh).value=e.target.value>today()?'planli':'yapildi'}
+      sync();
+    });
+    $('#f',sh).addEventListener('submit',function(e){e.preventDefault();
+      var g=kind()==='grup',date=$('#f-date',sh).value,st=$('#f-status',sh).value;
+      var sid=$('#f-student',sh).value,gid=$('#f-lgroup',sh).value;
+      if(!g&&!sid){toast('Öğrenciyi seç');return}
+      if(g&&!gid){toast('Grubu seç');return}
+      if(toMin($('#f-end',sh).value)<=toMin($('#f-start',sh).value)){toast('Bitiş saati başlangıçtan sonra olmalı');return}
+      var att=null;
+      if(g){att={};sh.querySelectorAll('#att input[data-sid]').forEach(function(c){att[c.dataset.sid]=c.checked})}
+      var feeV=$('#f-fee',sh).value;
+      var base={kind:g?'grup':'ozel',start:$('#f-start',sh).value,end:$('#f-end',sh).value,topic:$('#f-topic',sh).value.trim(),
+        charge:!g&&st==='iptal_ogrenci'&&$('#f-charge',sh).checked,fee:(!g&&feeV!=='')?num(feeV):null};
+      if(g){base.groupId=gid;base.att=att}else base.studentId=sid;
+      var rep=l?1:Math.max(1,Math.min(52,Math.round(num($('#f-rep',sh).value))||1));
+      submitWith($('#f',sh),async function(){
+        if(l){await put('lessons',Object.assign({},l,base,{date:date,status:st}),id);return}
+        for(var i=0;i<rep;i++){var di=addDays(date,7*i);
+          await put('lessons',Object.assign({},base,{date:di,status:(di>today()&&st==='yapildi')?'planli':st}))}
+      });
+    });
+    var b=$('#b-del',sh);if(b)armDelete(b,function(){return rm('lessons',id)});
+  });
+}
+
+/* ödeme */
+var METHODS=['Nakit','Havale/EFT','Kart','Diğer'];
+function paymentSheet(id,preset){
+  var p=id?C.payments.find(function(x){return x.id===id}):null;preset=preset||{};
+  var d=p||{studentId:preset.studentId||'',date:today(),amount:'',method:'Nakit',note:''};
+  var ss=C.students.slice().sort(function(a,b){return (a.active===false)-(b.active===false)||byName(a,b)});
+  var body='<form id="f" autocomplete="off"><label class="fl">Öğrenci<select id="f-student" required><option value="">Seç…</option>'+ss.map(function(s){return '<option value="'+s.id+'"'+(d.studentId===s.id?' selected':'')+'>'+esc(s.name)+(s.active===false?' (arşiv)':'')+'</option>'}).join('')+'</select></label>'+
+   '<div id="bal" class="note" style="margin-top:6px"></div>'+
+   '<div class="two"><label class="fl">Tutar (₺)<input id="f-amt" type="number" inputmode="decimal" min="0" step="any" required value="'+esc(d.amount)+'"></label><label class="fl">Tarih<input id="f-date" type="date" required value="'+d.date+'"></label></div>'+
+   '<div class="fl">Yöntem'+radios('method',METHODS.map(function(m){return [m,m]}),METHODS.indexOf(d.method)>-1?d.method:'Diğer')+'</div>'+
+   '<label class="fl">Not<input id="f-note" value="'+esc(d.note||'')+'" placeholder="Örn. Kasım ayı ücreti"></label>'+
+   '<div class="btns"><button class="btn" type="submit">Kaydet</button>'+(p?'<button class="btn danger" type="button" id="b-del">Sil</button>':'')+'</div></form>';
+  openSheet(p?'Ödemeyi düzenle':'Ödeme al',body,function(sh){
+    var showBal=function(){
+      var s=SM.get($('#f-student',sh).value),el=$('#bal',sh);
+      if(!s){el.innerHTML='';return}
+      var b=balance(s);
+      el.innerHTML='Güncel bakiye: <b>'+(b>0.5?'Borç '+money(b):b<-0.5?'Fazla ödeme '+money(-b):'Ödendi')+'</b>'+(b>0.5?' · <button type="button" class="link" id="fill">Tutarı doldur</button>':'');
+      var f=$('#fill',sh);if(f)f.onclick=function(){$('#f-amt',sh).value=Math.round(b*100)/100};
+    };
+    showBal();$('#f-student',sh).addEventListener('change',showBal);
+    $('#f',sh).addEventListener('submit',function(e){e.preventDefault();
+      var amt=num($('#f-amt',sh).value);if(amt<=0){toast('Tutarı yaz');return}
+      submitWith($('#f',sh),function(){return put('payments',Object.assign({},p||{},{studentId:$('#f-student',sh).value,amount:amt,date:$('#f-date',sh).value,method:rv('method'),note:$('#f-note',sh).value.trim()}),id)});
+    });
+    var b=$('#b-del',sh);if(b)armDelete(b,function(){return rm('payments',id)});
+  });
+}
+
+/* ---------- dışa aktarım ---------- */
+function csv(rows){return '﻿'+rows.map(function(r){return r.map(function(c){c=c==null?'':String(c);return /[;"\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(';')}).join('\r\n')}
+var nc=function(n){return String(Math.round((Number(n)||0)*100)/100).replace('.',',')};
+async function exportCsv(kind){
+  var rows,name;
+  var pl=function(d){return fmtPeriod(periodStartOf(d))};
+  if(kind==='lessons'){name='dersler.csv';rows=[['Dönem','Tarih','Başlangıç','Bitiş','Süre (dk)','Tür','Öğrenci / Grup','Durum','Konu','Ücret (₺)']].concat(
+    C.lessons.slice().sort(byDT).map(function(l){return [pl(l.date),l.date,l.start,l.end,lessonMins(l),l.kind==='grup'?'Grup':'Özel',lname(l),ST[l.status]||'',l.topic||'',nc(lessonFee(l))]}))}
+  else if(kind==='payments'){name='odemeler.csv';rows=[['Dönem','Tarih','Öğrenci','Tutar (₺)','Yöntem','Not']].concat(
+    C.payments.slice().sort(function(a,b){return a.date.localeCompare(b.date)}).map(function(p){return [pl(p.date),p.date,(SM.get(p.studentId)||{}).name||'',nc(p.amount),p.method||'',p.note||'']}))}
+  else{name='ogrenci-donem-ozeti.csv';var pk=V.repPeriod,pp=periodOf(pk);
+    rows=[['Dönem: '+fmtPeriod(pk)],['Öğrenci','Tür','Grup','Ücret şekli','Ücret (₺)','Dönem dersi','Dönem saati','Dönem ücreti (₺)','Dönem ödemesi (₺)','Devreden (₺)','Dönem sonu bakiye (₺)','Durum']].concat(
+    C.students.slice().sort(byName).map(function(s){var a=statsFor(s,pp.from,pp.to,[pk]),c=carryAt(s,pk);return [s.name,s.type==='grup'?'Grup':'Özel',gname(s),s.billing==='aylik'?'Aylık':'Ders başı',nc(s.billing==='aylik'?s.monthly:s.rate),a.n,nc(a.mins/60),nc(a.charge),nc(a.paid),nc(c),nc(c+a.charge-a.paid),s.active===false?'Arşiv':'Aktif']}))}
+  try{await dl.save({filename:name,data:csv(rows)})}catch(e){if(!e||e.code!=='declined')toast('Dosya kaydedilemedi')}
+}
+
+/* ---------- örnek veri ---------- */
+async function loadSample(){
+  var t=today(),ws=weekStart(t);
+  var mk=async function(col,o){return put(col,Object.assign({sample:true},o))};
+  try{
+    toast('Örnek veriler yükleniyor…');
+    var g1=await mk('groups',{name:'Cumartesi Matematik',note:'Cumartesi 10:00'});
+    var s1=await mk('students',{name:'Elif Yılmaz',phone:'',type:'ozel',billing:'ders',rate:600,monthly:0,start:addDays(t,-60),opening:0,active:true,note:'9. sınıf matematik'});
+    var s2=await mk('students',{name:'Mert Kaya',phone:'',type:'ozel',billing:'aylik',rate:0,monthly:3000,start:addDays(t,-45),opening:0,active:true,note:'Aylık paket'});
+    var s3=await mk('students',{name:'Zeynep Arslan',phone:'',type:'grup',groupId:g1,billing:'ders',rate:350,monthly:0,start:addDays(t,-50),opening:0,active:true});
+    var s4=await mk('students',{name:'Can Demir',phone:'',type:'grup',groupId:g1,billing:'ders',rate:300,monthly:0,start:addDays(t,-50),opening:0,active:true});
+    var s5=await mk('students',{name:'Deniz Aydın',phone:'',type:'grup',groupId:g1,billing:'aylik',rate:0,monthly:1200,start:addDays(t,-40),opening:0,active:true});
+    var jobs=[];
+    for(var w=-4;w<=1;w++){
+      var base=addDays(ws,7*w);
+      [[1,s1,'17:00','18:00'],[3,s1,'17:00','18:00'],[2,s2,'18:00','19:30']].forEach(function(x){
+        var d=addDays(base,x[0]);
+        jobs.push(['lessons',{kind:'ozel',studentId:x[1],date:d,start:x[2],end:x[3],status:d<=t?(w===-2&&x[1]===s2?'iptal_ogrenci':'yapildi'):'planli',topic:'',charge:false,fee:null}]);
+      });
+      var gd=addDays(base,5),att={};att[s3]=true;att[s4]=(w!==-1);att[s5]=true;
+      jobs.push(['lessons',{kind:'grup',groupId:g1,date:gd,start:'10:00',end:'12:00',status:gd<=t?'yapildi':'planli',topic:'',charge:false,fee:null,att:att}]);
+    }
+    jobs.push(['payments',{studentId:s1,date:addDays(t,-20),amount:3000,method:'Havale/EFT',note:''}]);
+    jobs.push(['payments',{studentId:s2,date:addDays(t,-25),amount:3000,method:'Nakit',note:'Geçen ay'}]);
+    jobs.push(['payments',{studentId:s3,date:addDays(t,-12),amount:1400,method:'Nakit',note:''}]);
+    jobs.push(['payments',{studentId:s5,date:addDays(t,-30),amount:1200,method:'Havale/EFT',note:''}]);
+    for(var i=0;i<jobs.length;i+=6)await Promise.all(jobs.slice(i,i+6).map(function(j){return mk(j[0],j[1])}));
+    toast('Örnek veriler yüklendi');
+  }catch(e){fail(e)}
+}
+async function clearSample(){
+  try{
+    var all=[];['students','groups','lessons','payments'].forEach(function(c){C[c].forEach(function(x){if(x.sample)all.push([c,x.id])})});
+    for(var i=0;i<all.length;i+=6)await Promise.all(all.slice(i,i+6).map(function(a){return rm(a[0],a[1])}));
+    toast('Örnek veriler silindi');
+  }catch(e){fail(e)}
+}
+
+/* ---------- olaylar ---------- */
+function setTab(t){V.tab=t;location.hash='#'+t;render();window.scrollTo(0,0)}
+var ACT={
+  goTab:function(el){closeSheet();setTab(el.dataset.t)},
+  goDebt:function(){V.filter='borc';V.seg='students';setTab('ogrenciler')},
+  close:closeSheet,
+  newStudent:function(){studentSheet()},editStudent:function(el){studentSheet(el.dataset.id)},viewStudent:function(el){studentDetail(el.dataset.id)},
+  newGroup:function(){groupSheet()},editGroup:function(el){groupSheet(el.dataset.id)},
+  newLesson:function(el){var p={};if(el.dataset.sid)p.studentId=el.dataset.sid;if(V.tab==='dersler'&&V.lv==='week'&&!el.dataset.sid){var t=today();if(t<V.weekStart||t>addDays(V.weekStart,6))p.date=V.weekStart}lessonSheet(null,p)},
+  editLesson:function(el){lessonSheet(el.dataset.id)},
+  newLessonOn:function(el){lessonSheet(null,{date:el.dataset.d})},
+  dayTap:function(el){var d=el.dataset.d;if(C.lessons.some(function(l){return l.date===d}))daySheet(d);else lessonSheet(null,{date:d})},
+  openWeek:function(el){V.weekStart=el.dataset.w;V.lv='week';render();window.scrollTo(0,0)},
+  backPeriod:function(){V.lv='period';render();window.scrollTo(0,0)},
+  pPrev:function(){V.period=shiftPeriod(V.period,-1);render()},pNext:function(){V.period=shiftPeriod(V.period,1);render()},pNow:function(){V.period=periodStartOf(today());render()},
+  markDone:async function(el){var inSheet=!!el.closest('#ov');try{await db.collection('lessons').doc(el.dataset.id).update({status:'yapildi'});if(inSheet)closeSheet();toast('Yapıldı olarak işaretlendi')}catch(e){fail(e)}},
+  newPayment:function(el){paymentSheet(null,{studentId:el.dataset.sid||''})},editPayment:function(el){paymentSheet(el.dataset.id)},
+  seg:function(el){V.seg=el.dataset.v;render()},filter:function(el){V.filter=el.dataset.v;render()},
+  wPrev:function(){V.weekStart=addDays(V.weekStart,-7);render()},wNext:function(){V.weekStart=addDays(V.weekStart,7);render()},wNow:function(){V.weekStart=weekStart(today());render()},
+  mPrev:function(){V.payPeriod=shiftPeriod(V.payPeriod,-1);render()},mNext:function(){V.payPeriod=shiftPeriod(V.payPeriod,1);render()},mNow:function(){V.payPeriod=periodStartOf(today());render()},
+  rmode:function(el){V.repMode=el.dataset.v;render()},
+  rPrev:function(){if(V.repMode==='hafta')V.repWeek=addDays(V.repWeek,-7);else V.repPeriod=shiftPeriod(V.repPeriod,-1);render()},
+  rNext:function(){if(V.repMode==='hafta')V.repWeek=addDays(V.repWeek,7);else V.repPeriod=shiftPeriod(V.repPeriod,1);render()},
+  rNow:function(){V.repWeek=weekStart(today());V.repPeriod=periodStartOf(today());render()},
+  exp:function(el){exportCsv(el.dataset.v)},backup:backupNow,restore:pickRestore,sample:loadSample,clearSample:clearSample
+};
+document.addEventListener('click',function(e){var t=e.target.closest('[data-act]');if(!t)return;var f=ACT[t.dataset.act];if(f)f(t,e)});
+document.addEventListener('input',function(e){if(e.target.id==='q'){V.q=e.target.value;var l=$('#slist');if(l)l.innerHTML=studentListHtml()}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSheet()});
+function tabFromHash(){var h=location.hash.replace('#','');if(VIEWS[h])V.tab=h}
+window.addEventListener('hashchange',function(){tabFromHash();render()});
+
+/* ---------- yerel veri katmanı (telefonun tarayıcısında saklanır) ---------- */
+var STORE_KEY='dersdefteri.v1',BK_KEY='dersdefteri.sonyedek',COLS=['students','groups','lessons','payments'];
+var mem={students:{},groups:{},lessons:{},payments:{}},persistOk=true,warned=false,listeners={students:[],groups:[],lessons:[],payments:[]};
+function loadStore(){
+  try{var r=localStorage.getItem(STORE_KEY);if(r){var o=JSON.parse(r);COLS.forEach(function(k){mem[k]=o[k]||{}})}}
+  catch(e){persistOk=false}
+}
+function saveStore(){
+  try{localStorage.setItem(STORE_KEY,JSON.stringify(mem))}
+  catch(e){persistOk=false;if(!warned){warned=true;toast('Bu tarayıcı kayıt yapmıyor. Veriler sayfa kapanınca silinir.')}}
+}
+function snapOf(n){return {docs:Object.keys(mem[n]).map(function(id){return {id:id,data:function(){return JSON.parse(JSON.stringify(mem[n][id]))}}})}}
+function emit(n){listeners[n].slice().forEach(function(f){f(snapOf(n))})}
+var newId=function(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)};
+db={collection:function(n){return {
+  onSnapshot:function(next){listeners[n].push(next);setTimeout(function(){next(snapOf(n))},0);return function(){listeners[n]=listeners[n].filter(function(f){return f!==next})}},
+  doc:function(id){id=id||newId();return {id:id,
+    set:async function(d){mem[n][id]=d;saveStore();emit(n)},
+    update:async function(d){if(!mem[n][id])throw new Error('yok');Object.assign(mem[n][id],d);saveStore();emit(n)},
+    delete:async function(){delete mem[n][id];saveStore();emit(n)}}}}}};
+function download(name,data,type){
+  var a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type:type}));
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){a.remove();URL.revokeObjectURL(u)},1500);
+}
+dl={save:async function(o){download(o.filename,o.data,/\.json$/.test(o.filename)?'application/json':'text/csv;charset=utf-8')}};
+
+/* yedek al / yedekten yükle */
+function lastBackup(){try{return localStorage.getItem(BK_KEY)||''}catch(e){return ''}}
+function backupNow(){
+  var o={app:'ders-defteri',version:1,saved:new Date().toISOString()};COLS.forEach(function(k){o[k]=mem[k]});
+  download('ders-defteri-yedek-'+today()+'.json',JSON.stringify(o),'application/json');
+  try{localStorage.setItem(BK_KEY,today())}catch(e){}
+  toast('Yedek dosyası indirildi');render();
+}
+function pickRestore(){
+  var inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(){
+      var o;try{o=JSON.parse(r.result)}catch(e){toast('Bu dosya okunamadı');return}
+      if(!o||o.app!=='ders-defteri'||!o.students){toast('Bu bir Ders Defteri yedeği değil');return}
+      var cnt=function(k){return Object.keys(o[k]||{}).length};
+      openSheet('Yedeği yükle','<p>Yedekte <b>'+cnt('students')+' öğrenci</b>, <b>'+cnt('lessons')+' ders</b> ve <b>'+cnt('payments')+' ödeme</b> var'+(o.saved?' ('+esc(String(o.saved).slice(0,10))+')':'')+'.</p><p class="note">Yüklersen şu anki tüm verilerin yedektekilerle değiştirilir.</p><div class="btns"><button class="btn danger" id="doRestore" type="button">Yedeği yükle</button><button class="btn ghost" data-act="close" type="button">Vazgeç</button></div>',function(sh){
+        var b=$('#doRestore',sh),armed=false;
+        b.addEventListener('click',function(){
+          if(!armed){armed=true;b.textContent='Emin misin? Tekrar dokun';return}
+          COLS.forEach(function(k){mem[k]=o[k]||{}});saveStore();COLS.forEach(emit);closeSheet();toast('Yedek yüklendi');
+        });
+      });
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+/* ---------- başlangıç ---------- */
+loadStore();
+window.addEventListener('storage',function(e){if(e.key===STORE_KEY){loadStore();COLS.forEach(emit)}});
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+tabFromHash();dbState='ok';render();
+COLS.forEach(function(n){
+  db.collection(n).onSnapshot(function(snap){
+    C[n]=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});
+    loaded[n]=true;render();
+  });
+});
+if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+})();
+</script>
+</body>
+</html>
